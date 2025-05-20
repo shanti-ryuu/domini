@@ -1,0 +1,58 @@
+name: domini
+description: "A notes app inspired by iPhone Notes with PIN authentication and local database"
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.1
+  intl: ^0.19.0
+  provider: ^6.1.1
+  uuid: ^4.2.1
+  flutter_secure_storage: ^9.0.0
+  crypto: ^3.0.3
+  share_plus: ^7.2.1
+  pdf: ^3.10.7
+  printing: ^5.11.1
+  flutter_markdown: ^0.6.18
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.3.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.6
+
+flutter:
+  uses-material-design: true
+  # Using system fonts instead of custom fonts
+  
+  assets:
+    - assets/images/
+    - assets/icons/
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  web:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+    background_color: "#FAFAFA"
+    theme_color: "#FAFAFA"
+
+flutter_native_splash:
+  color: "#FAFAFA"
+  image: assets/icons/splash_icon.png
+  web: true
