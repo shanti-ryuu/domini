@@ -1,6 +1,6 @@
 [build]
-  command = "mkdir -p public && cp -r index.html public/ && echo 'Created minimal deployment'"
-  publish = "public"
+  command = "echo 'Using root directory for deployment'"
+  publish = "."
 
 [[redirects]]
   from = "/*"

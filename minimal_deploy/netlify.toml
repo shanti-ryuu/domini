@@ -1,6 +1,4 @@
 [build]
-  # No build command needed for static site
-  command = ""
   publish = "."
 
 [[redirects]]

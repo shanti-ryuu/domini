@@ -1,38 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="/">
-
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="domini">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <title>domini</title>
-  <link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DomiNotes</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #FAFAFA;
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            padding: 2rem;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #007AFF;
+        }
+        p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        .button {
+            display: inline-block;
+            background-color: #007AFF;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #0062cc;
+        }
+        .logo {
+            width: 100px;
+            height: 150px;
+            background-color: #007AFF;
+            border-radius: 16px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+        .logo::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background-color: rgba(255, 255, 255, 0.3);
+            top: 50%;
+            left: 0;
+        }
+        .dot {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border-radius: 50%;
+        }
+        .dot1 { top: 20px; left: 20px; }
+        .dot2 { top: 20px; left: 50px; }
+        .dot3 { top: 20px; right: 20px; }
+        .dot4 { bottom: 20px; left: 20px; }
+        .dot5 { bottom: 20px; right: 20px; }
+        .dot6 { bottom: 40px; left: 35px; }
+        .dot7 { bottom: 40px; right: 35px; }
+    </style>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+    <div class="container">
+        <div class="logo">
+            <div class="dot dot1"></div>
+            <div class="dot dot2"></div>
+            <div class="dot dot3"></div>
+            <div class="dot dot4"></div>
+            <div class="dot dot5"></div>
+            <div class="dot dot6"></div>
+            <div class="dot dot7"></div>
+        </div>
+        <h1>DomiNotes</h1>
+        <p>A mobile-first, offline-ready, Progressive Web App inspired by Apple's Notes app — built with Flutter Web and Dart.</p>
+        <p>Features secure PIN-based access, a folder/note system, dark mode, and full offline functionality using a local NoSQL database.</p>
+        <a href="#" class="button" id="comingSoonBtn">Coming Soon</a>
+        <p><small>The app is currently being deployed. Please check back soon!</small></p>
+        <script>
+            document.getElementById('comingSoonBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('DomiNotes is currently being deployed. Please check back soon!');
+            });
+        </script>
+    </div>
 </body>
 </html>
