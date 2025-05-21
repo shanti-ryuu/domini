@@ -1,6 +1,9 @@
+# Netlify configuration for DomiNotes
 [build]
-  command = "echo 'Using root directory for deployment'"
-  publish = "."
+  # No build command needed - using pre-built files
+  command = "echo 'Static site deployment'"
+  # Explicitly set the publish directory to the root
+  publish = "/opt/build/repo"
 
 [[redirects]]
   from = "/*"
