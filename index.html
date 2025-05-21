@@ -91,7 +91,14 @@
         <h1>DomiNotes</h1>
         <p>A mobile-first, offline-ready, Progressive Web App inspired by Apple's Notes app — built with Flutter Web and Dart.</p>
         <p>Features secure PIN-based access, a folder/note system, dark mode, and full offline functionality using a local NoSQL database.</p>
-        <a href="build/web/index.html" class="button">Launch App</a>
+        <a href="#" class="button" id="comingSoonBtn">Coming Soon</a>
+        <p><small>The app is currently being deployed. Please check back soon!</small></p>
+        <script>
+            document.getElementById('comingSoonBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('DomiNotes is currently being deployed. Please check back soon!');
+            });
+        </script>
     </div>
 </body>
 </html>
