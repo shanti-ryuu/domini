@@ -1,0 +1,16 @@
+{
+  "name": "domini-notes",
+  "version": "1.0.0",
+  "description": "DomiNotes - A Flutter-based PWA with PIN authentication and offline functionality",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'No build step needed - using pre-built Flutter web files'"
+  },
+  "keywords": [
+    "flutter",
+    "notes",
+    "pwa"
+  ],
+  "author": "",
+  "license": "MIT"
+}

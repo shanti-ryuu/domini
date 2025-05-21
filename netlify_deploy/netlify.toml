@@ -1,0 +1,9 @@
+[build]
+  # No build command needed - using pre-built files
+  command = ":"
+  publish = "."
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

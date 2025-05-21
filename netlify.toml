@@ -1,5 +1,7 @@
 [build]
-  command = "flutter build web --release"
+  # Explicitly disable any build commands
+  command = ":"
+  # Specify the directory with pre-built files
   publish = "build/web"
 
 [[redirects]]

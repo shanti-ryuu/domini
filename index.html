@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DomiNotes</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #FAFAFA;
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            padding: 2rem;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #007AFF;
+        }
+        p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        .button {
+            display: inline-block;
+            background-color: #007AFF;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #0062cc;
+        }
+        .logo {
+            width: 100px;
+            height: 150px;
+            background-color: #007AFF;
+            border-radius: 16px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+        .logo::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background-color: rgba(255, 255, 255, 0.3);
+            top: 50%;
+            left: 0;
+        }
+        .dot {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border-radius: 50%;
+        }
+        .dot1 { top: 20px; left: 20px; }
+        .dot2 { top: 20px; left: 50px; }
+        .dot3 { top: 20px; right: 20px; }
+        .dot4 { bottom: 20px; left: 20px; }
+        .dot5 { bottom: 20px; right: 20px; }
+        .dot6 { bottom: 40px; left: 35px; }
+        .dot7 { bottom: 40px; right: 35px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <div class="dot dot1"></div>
+            <div class="dot dot2"></div>
+            <div class="dot dot3"></div>
+            <div class="dot dot4"></div>
+            <div class="dot dot5"></div>
+            <div class="dot dot6"></div>
+            <div class="dot dot7"></div>
+        </div>
+        <h1>DomiNotes</h1>
+        <p>A mobile-first, offline-ready, Progressive Web App inspired by Apple's Notes app — built with Flutter Web and Dart.</p>
+        <p>Features secure PIN-based access, a folder/note system, dark mode, and full offline functionality using a local NoSQL database.</p>
+        <a href="build/web/index.html" class="button">Launch App</a>
+    </div>
+</body>
+</html>

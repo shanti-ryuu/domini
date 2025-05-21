@@ -1,0 +1,9 @@
+[build]
+  # No build command needed as we're using pre-built files
+  command = "echo 'Using pre-built Flutter web files'"
+  publish = "."
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
