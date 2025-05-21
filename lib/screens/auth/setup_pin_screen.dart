@@ -5,6 +5,7 @@ import 'package:domini/services/auth_service.dart';
 import 'package:domini/screens/home/home_screen.dart';
 import 'package:domini/widgets/pin_keyboard.dart';
 import 'package:domini/widgets/pin_display.dart';
+import 'package:domini/screens/auth/security_question_setup_screen.dart';
 
 class SetupPinScreen extends StatefulWidget {
   final bool isReset;
@@ -178,13 +179,7 @@ class _SetupPinScreenState extends State<SetupPinScreen> {
     final String pin = _enteredPin.join();
     
     await authService.setPin(pin);
-    
-    // If this is a PIN reset, also set a security question and answer
-    if (widget.isReset) {
-      // In a real app, you would save the security question and answer here
-      // This is just a simulation for the demo
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
+    await _resetFailedAttempts(); // Reset any failed attempts when setting a new PIN
     
     if (mounted) {
       // Show success message for PIN reset
@@ -195,13 +190,27 @@ class _SetupPinScreenState extends State<SetupPinScreen> {
             duration: Duration(seconds: 2),
           ),
         );
+        
+        // Navigate to home screen after PIN reset
+        Navigator.of(context).pushReplacement(
+          CupertinoPageRoute(
+            builder: (context) => const HomeScreen(),
+          ),
+        );
+      } else {
+        // For new PIN setup, navigate to security question setup
+        Navigator.of(context).pushReplacement(
+          CupertinoPageRoute(
+            builder: (context) => const SecurityQuestionSetupScreen(isAfterPinSetup: true),
+          ),
+        );
       }
-      
-      Navigator.of(context).pushReplacement(
-        CupertinoPageRoute(
-          builder: (context) => const HomeScreen(),
-        ),
-      );
     }
+  }
+  
+  Future<void> _resetFailedAttempts() async {
+    // In a real app, you would reset the failed attempts here
+    // This is just a simulation for the demo
+    await Future.delayed(const Duration(milliseconds: 500));
   }
 }

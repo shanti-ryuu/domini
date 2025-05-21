@@ -400,10 +400,10 @@ class _PinScreenState extends State<PinScreen> with SingleTickerProviderStateMix
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Domino logo
+        // Circular note icon logo
         Container(
-          width: _showLogo.value ? 80 : 60,
-          height: _showLogo.value ? 120 : 90,
+          width: _showLogo.value ? 100 : 70,
+          height: _showLogo.value ? 100 : 70,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -412,7 +412,7 @@ class _PinScreenState extends State<PinScreen> with SingleTickerProviderStateMix
                 ? [AppColors.primaryDark, Color(0xFF1A4D80)]
                 : [AppColors.primaryLight, Color(0xFF2E86C1)],
             ),
-            borderRadius: BorderRadius.circular(16),
+            shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.2),
@@ -423,24 +423,26 @@ class _PinScreenState extends State<PinScreen> with SingleTickerProviderStateMix
             ],
           ),
           child: Stack(
+            alignment: Alignment.center,
             children: [
-              // Dividing line
-              Center(
-                child: Container(
-                  width: double.infinity,
-                  height: 3,
-                  color: Colors.white.withOpacity(0.4),
+              // Note icon
+              Icon(
+                Icons.note_alt_outlined,
+                color: Colors.white,
+                size: _showLogo.value ? 50 : 35,
+              ),
+              // Circular border
+              Container(
+                width: _showLogo.value ? 90 : 63,
+                height: _showLogo.value ? 90 : 63,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
+                    width: 2,
+                  ),
                 ),
               ),
-              // Dots pattern
-              Positioned(top: 15, left: 15, child: _buildDot()),
-              Positioned(top: 15, right: 15, child: _buildDot()),
-              Positioned(top: 45, left: 15, child: _buildDot()),
-              Positioned(top: 45, right: 15, child: _buildDot()),
-              Positioned(bottom: 45, left: 15, child: _buildDot()),
-              Positioned(bottom: 45, right: 15, child: _buildDot()),
-              Positioned(bottom: 15, left: 15, child: _buildDot()),
-              Positioned(bottom: 15, right: 15, child: _buildDot()),
             ],
           ),
         ),
@@ -466,21 +468,5 @@ class _PinScreenState extends State<PinScreen> with SingleTickerProviderStateMix
     );
   }
   
-  Widget _buildDot() {
-    return Container(
-      width: 10,
-      height: 10,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 2,
-            spreadRadius: 0.5,
-          ),
-        ],
-      ),
-    );
-  }
+  // Removed unused _buildDot method
 }
