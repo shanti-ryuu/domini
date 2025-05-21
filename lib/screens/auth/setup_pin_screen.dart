@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:domini/services/auth_service.dart';
+import 'package:domini/services/theme_service.dart';
 import 'package:domini/screens/home/home_screen.dart';
 import 'package:domini/widgets/pin_keyboard.dart';
 import 'package:domini/widgets/pin_display.dart';
-import 'package:domini/screens/auth/security_question_setup_screen.dart';
+import 'package:domini/screens/auth/username_setup_screen.dart';
 
 class SetupPinScreen extends StatefulWidget {
   final bool isReset;
@@ -50,14 +51,29 @@ class _SetupPinScreenState extends State<SetupPinScreen> {
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
+    final themeService = Provider.of<ThemeService>(context);
+    final isDarkMode = themeService.isDarkMode;
     final int pinLength = authService.pinLength;
 
+    // iOS-like colors
+    final backgroundColor = isDarkMode ? Colors.black : Colors.white;
+    final keyColor = isDarkMode ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7);
+    final textColor = isDarkMode ? Colors.white : Colors.black;
+    final accentColor = const Color(0xFF007AFF); // iOS blue
+    final errorColor = const Color(0xFFFF3B30); // iOS red
+
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: Text(widget.isReset ? 'Reset PIN' : 'Setup PIN'),
+        backgroundColor: backgroundColor,
+        elevation: 0,
+        title: Text(
+          widget.isReset ? 'Reset PIN' : 'Setup PIN',
+          style: TextStyle(color: textColor),
+        ),
         leading: _isConfirming
             ? IconButton(
-                icon: const Icon(CupertinoIcons.back),
+                icon: Icon(CupertinoIcons.back, color: accentColor),
                 onPressed: () {
                   setState(() {
                     _isConfirming = false;
@@ -77,30 +93,41 @@ class _SetupPinScreenState extends State<SetupPinScreen> {
             const Spacer(),
             Text(
               _headerText,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w500,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w600,
+                color: textColor,
               ),
             ),
             const SizedBox(height: 16),
-            Text(
-              _subHeaderText,
-              style: TextStyle(
-                fontSize: 16,
-                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                _subHeaderText,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: textColor.withOpacity(0.7),
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
             PinDisplay(
               pinLength: pinLength,
               enteredDigits: _isConfirming ? _confirmPin.length : _enteredPin.length,
               isError: _isError,
+              filledColor: _isError ? errorColor : accentColor,
+              emptyColor: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300,
             ),
             const Spacer(),
             PinKeyboard(
               onKeyPressed: (digit) => _onKeyPressed(digit, pinLength),
               onDeletePressed: _onDeletePressed,
+              keyColor: keyColor,
+              textColor: textColor,
+              deleteColor: errorColor,
+              useGlassmorphism: isDarkMode,
+              fontSize: 28,
             ),
             const SizedBox(height: 40),
           ],
@@ -198,10 +225,10 @@ class _SetupPinScreenState extends State<SetupPinScreen> {
           ),
         );
       } else {
-        // For new PIN setup, navigate to security question setup
+        // For new PIN setup, navigate to username setup
         Navigator.of(context).pushReplacement(
           CupertinoPageRoute(
-            builder: (context) => const SecurityQuestionSetupScreen(isAfterPinSetup: true),
+            builder: (context) => const UsernameSetupScreen(),
           ),
         );
       }

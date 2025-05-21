@@ -1,14 +1,18 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+import 'package:domini/constants/app_colors.dart';
 import 'package:domini/services/note_service.dart';
 import 'package:domini/services/theme_service.dart';
+import 'package:domini/services/database_service.dart';
 import 'package:domini/screens/home/note_detail_screen.dart';
-import 'package:domini/screens/home/folder_list_screen.dart';
 import 'package:domini/screens/home/trash_screen.dart';
 import 'package:domini/screens/home/settings_screen.dart';
+import 'package:domini/screens/home/profile_screen.dart';
 import 'package:domini/widgets/note_list_item.dart';
 import 'package:domini/widgets/empty_state.dart';
+import 'package:domini/models/user_profile.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,7 +24,39 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
+  UserProfile? _userProfile;
+  bool _isLoadingProfile = true;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+  
+  Future<void> _loadUserProfile() async {
+    setState(() {
+      _isLoadingProfile = true;
+    });
+    
+    try {
+      final databaseService = DatabaseService();
+      final userProfile = await databaseService.getCurrentUserProfile();
+      
+      if (mounted) {
+        setState(() {
+          _userProfile = userProfile;
+          _isLoadingProfile = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingProfile = false;
+        });
+      }
+    }
+  }
+  
   @override
   void dispose() {
     _searchController.dispose();
@@ -49,15 +85,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _openFolders() {
-    Navigator.push(
-      context,
-      CupertinoPageRoute(
-        builder: (context) => const FolderListScreen(),
-      ),
-    );
-  }
-
   void _openTrash() {
     Navigator.push(
       context,
@@ -67,65 +94,99 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _openSettings() {
-    Navigator.push(
-      context,
-      CupertinoPageRoute(
-        builder: (context) => const SettingsScreen(),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final noteService = Provider.of<NoteService>(context);
     final themeService = Provider.of<ThemeService>(context);
-    final notes = noteService.notes;
-    final currentFolder = noteService.folders.firstWhere(
-      (folder) => folder.id == noteService.currentFolderId,
-      orElse: () => noteService.folders.first,
-    );
-
+    final isDarkMode = themeService.isDarkMode;
+    
     return Scaffold(
       appBar: AppBar(
         title: _isSearching
-            ? CupertinoSearchTextField(
-                controller: _searchController,
-                onChanged: (value) {
-                  noteService.setSearchQuery(value);
-                },
-                placeholder: 'Search notes',
-                style: TextStyle(
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
+          ? TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search notes...',
+                border: InputBorder.none,
+                hintStyle: TextStyle(
+                  color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
                 ),
-              )
-            : Text(currentFolder.name),
-        leading: IconButton(
-          icon: const Icon(CupertinoIcons.folder),
-          onPressed: _openFolders,
-        ),
+              ),
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black,
+                fontSize: 18,
+              ),
+              onChanged: (value) {
+                noteService.setSearchQuery(value);
+              },
+              autofocus: true,
+            )
+          : const Text('Notes', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: isDarkMode ? Colors.white : Colors.black,
         actions: [
           IconButton(
-            icon: Icon(_isSearching ? CupertinoIcons.xmark : CupertinoIcons.search),
+            icon: Icon(_isSearching ? Icons.close : Icons.search),
             onPressed: _toggleSearch,
           ),
-          IconButton(
-            icon: const Icon(CupertinoIcons.settings),
-            onPressed: _openSettings,
-          ),
+          if (!_isLoadingProfile && _userProfile != null)
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                    builder: (context) => const ProfileScreen(),
+                  ),
+                ).then((_) => _loadUserProfile());
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: _userProfile!.profileImagePath != null
+                    ? CircleAvatar(
+                        radius: 16,
+                        backgroundImage: FileImage(File(_userProfile!.profileImagePath!)),
+                      )
+                    : CircleAvatar(
+                        radius: 16,
+                        backgroundColor: isDarkMode ? AppColors.primaryDark : AppColors.primaryLight,
+                        child: Text(
+                          _userProfile!.displayName.isNotEmpty
+                              ? _userProfile!.displayName.substring(0, 1).toUpperCase()
+                              : _userProfile!.username.substring(0, 1).toUpperCase(),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                    builder: (context) => const SettingsScreen(),
+                  ),
+                );
+              },
+            ),
         ],
       ),
-      body: notes.isEmpty
+      body: noteService.notes.isEmpty
           ? EmptyState(
-              icon: CupertinoIcons.doc_text,
+              icon: Icons.note,
               title: 'No Notes',
-              message: 'Tap the + button to create a new note',
+              message: noteService.searchQuery.isNotEmpty
+                  ? 'No notes found matching "${noteService.searchQuery}"'
+                  : 'No notes yet',
             )
           : ListView.separated(
-              itemCount: notes.length,
-              separatorBuilder: (context, index) => const Divider(height: 1),
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              itemCount: noteService.notes.length,
+              separatorBuilder: (context, index) => const Divider(height: 1, indent: 16, endIndent: 16),
               itemBuilder: (context, index) {
-                final note = notes[index];
+                final note = noteService.notes[index];
                 return NoteListItem(
                   note: note,
                   onTap: () {
@@ -136,6 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   },
+
                 );
               },
             ),
@@ -149,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
               tooltip: 'Recently Deleted',
             ),
             Text(
-              '${notes.length} note${notes.length == 1 ? '' : 's'}',
+              '${noteService.notes.length} note${noteService.notes.length == 1 ? '' : 's'}',
               style: TextStyle(
                 color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
               ),
@@ -166,7 +228,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _createNewNote,
-        child: const Icon(CupertinoIcons.add),
+        backgroundColor: isDarkMode ? AppColors.primaryDark : AppColors.primaryLight,
+        child: const Icon(Icons.add),
+        elevation: 4,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );

@@ -38,6 +38,16 @@ class ThemeService extends ChangeNotifier {
       notifyListeners();
     }
   }
+  
+  Future<void> setDarkMode(bool value) async {
+    _isDarkMode = value;
+    final settings = await _databaseService.getSettings();
+    if (settings != null) {
+      settings.darkMode = value;
+      await _databaseService.updateSettings(settings);
+      notifyListeners();
+    }
+  }
 
   Future<void> setUseSystemTheme(bool value) async {
     _useSystemTheme = value;

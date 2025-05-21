@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:domini/services/database_service.dart';
-import 'package:domini/constants/app_colors.dart';
+import 'package:domini/services/theme_service.dart';
 import 'package:domini/screens/auth/setup_pin_screen.dart';
 
 class ForgotPinScreen extends StatefulWidget {
@@ -15,7 +15,6 @@ class ForgotPinScreen extends StatefulWidget {
 class _ForgotPinScreenState extends State<ForgotPinScreen> {
   final TextEditingController _securityAnswerController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  // Used in _verifySecurityAnswer method
   bool _isLoading = false;
   String _errorMessage = '';
   int _remainingAttempts = 3; // Limit to 3 attempts
@@ -39,8 +38,58 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
     if (mounted) {
       setState(() {
         _isLoadingQuestion = false;
-        _securityQuestion = question != null && question.isNotEmpty ? question : 'No security question found. Please contact support.';
+        _securityQuestion = question != null && question.isNotEmpty 
+            ? question 
+            : 'No security question found. Please contact support.';
       });
+    }
+  }
+
+  Future<void> _verifySecurityAnswer() async {
+    if (_formKey.currentState?.validate() != true) {
+      return;
+    }
+    
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+    
+    final databaseService = Provider.of<DatabaseService>(context, listen: false);
+    final answer = _securityAnswerController.text.trim();
+    
+    try {
+      final isCorrect = await databaseService.verifySecurityAnswer(answer);
+      
+      if (mounted) {
+        if (isCorrect) {
+          // Navigate to reset PIN screen
+          Navigator.of(context).pushReplacement(
+            CupertinoPageRoute(
+              builder: (context) => const SetupPinScreen(isReset: true),
+            ),
+          );
+        } else {
+          _remainingAttempts--;
+          setState(() {
+            _isLoading = false;
+            _errorMessage = 'Incorrect answer. Please try again.';
+            
+            if (_remainingAttempts <= 0) {
+              _errorMessage = 'Too many failed attempts. Please contact support.';
+              // Disable the button
+              _remainingAttempts = 0;
+            }
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'An error occurred. Please try again later.';
+        });
+      }
     }
   }
 
@@ -50,283 +99,172 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
     super.dispose();
   }
 
-  Future<void> _verifySecurityAnswer() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    if (_remainingAttempts <= 0) {
-      setState(() {
-        _errorMessage = 'Too many failed attempts. Please try again later.';
-      });
-      return;
-    }
-
-    // Hide keyboard
-    FocusScope.of(context).unfocus();
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
-
-    final databaseService = Provider.of<DatabaseService>(context, listen: false);
-    final answer = _securityAnswerController.text.trim();
-
-    // Simulate verification with a delay (anti-timing attack measure)
-    await Future.delayed(Duration(milliseconds: 500 + (answer.length * 10)));
-
-    // Verify the security answer
-    final bool isCorrect = await databaseService.verifySecurityAnswer(answer);
-
-    if (isCorrect) {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          CupertinoPageRoute(
-            builder: (context) => const SetupPinScreen(isReset: true),
-          ),
-        );
-      }
-    } else {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _remainingAttempts--;
-          _errorMessage = 'Incorrect answer. $_remainingAttempts attempts remaining.';
-          _securityAnswerController.clear();
-        });
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
+    final themeService = Provider.of<ThemeService>(context);
+    final isDarkMode = themeService.isDarkMode;
+    
+    // iOS-like colors
+    final backgroundColor = isDarkMode ? Colors.black : Colors.white;
+    final textColor = isDarkMode ? Colors.white : Colors.black;
+    final accentColor = const Color(0xFF007AFF); // iOS blue
+    final errorColor = const Color(0xFFFF3B30); // iOS red
+    final cardColor = isDarkMode ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7);
+    
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('Forgot PIN'),
+        backgroundColor: backgroundColor,
         elevation: 0,
-        backgroundColor: Colors.transparent,
-        foregroundColor: isDarkMode ? Colors.white : Colors.black87,
+        title: Text(
+          'Forgot PIN',
+          style: TextStyle(color: textColor),
+        ),
+        leading: IconButton(
+          icon: Icon(CupertinoIcons.back, color: accentColor),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // App logo
-              Center(
-                child: Column(
-                  children: [
-                    Container(
-                      width: 70,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: isDarkMode
-                              ? [AppColors.primaryDark, Color(0xFF1A4D80)]
-                              : [AppColors.primaryLight, Color(0xFF2E86C1)],
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 10,
-                            spreadRadius: 1,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          // Note icon
-                          Icon(
-                            Icons.note_alt_outlined,
-                            color: Colors.white,
-                            size: 35,
-                          ),
-                          // Circular border
-                          Container(
-                            width: 63,
-                            height: 63,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'DomiNotes',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                        foreground: Paint()
-                          ..shader = LinearGradient(
-                                colors: isDarkMode
-                                    ? [AppColors.primaryDark, Color(0xFF64B5F6)]
-                                    : [AppColors.primaryLight, Color(0xFF0D47A1)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ).createShader(Rect.fromLTWH(0, 0, 200, 70)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              if (_isLoadingQuestion)
-                const Center(
-                  child: CircularProgressIndicator(),
-                )
-              else
-                Form(
+          padding: const EdgeInsets.all(16.0),
+          child: _isLoadingQuestion
+              ? Center(child: CircularProgressIndicator(color: accentColor))
+              : Form(
                   key: _formKey,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      const SizedBox(height: 24),
+                      Text(
+                        'Security Question',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                          color: textColor,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: isDarkMode ? Colors.grey.shade800.withOpacity(0.5) : Colors.grey.shade100,
+                          color: cardColor,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade300,
-                            width: 1,
+                          boxShadow: isDarkMode ? [] : [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          _securityQuestion,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                            color: textColor.withOpacity(0.9),
                           ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      ),
+                      const SizedBox(height: 32),
+                      Text(
+                        'Your Answer',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                          color: textColor,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _securityAnswerController,
+                        style: TextStyle(color: textColor),
+                        decoration: InputDecoration(
+                          hintText: 'Enter your answer',
+                          hintStyle: TextStyle(color: textColor.withOpacity(0.5)),
+                          filled: true,
+                          fillColor: cardColor,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: accentColor, width: 2),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: errorColor, width: 2),
+                          ),
+                          errorText: _errorMessage.isNotEmpty ? _errorMessage : null,
+                          errorStyle: TextStyle(color: errorColor),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter your answer';
+                          }
+                          return null;
+                        },
+                      ),
+                      if (_remainingAttempts < 3) ...[  
+                        const SizedBox(height: 12),
+                        Row(
                           children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.security,
-                                  color: isDarkMode ? Colors.blue.shade300 : Colors.blue.shade700,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Security Question',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: isDarkMode ? Colors.white : Colors.black87,
-                                  ),
-                                ),
-                              ],
+                            Icon(
+                              CupertinoIcons.exclamationmark_triangle,
+                              color: _remainingAttempts == 1 ? errorColor : Colors.orange,
+                              size: 18,
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(width: 8),
                             Text(
-                              _securityQuestion,
+                              'Remaining attempts: $_remainingAttempts',
                               style: TextStyle(
-                                fontSize: 16,
-                                color: isDarkMode ? Colors.white : Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _securityAnswerController,
-                              decoration: InputDecoration(
-                                labelText: 'Answer',
-                                labelStyle: TextStyle(
-                                  color: isDarkMode ? Colors.white : Colors.black87,
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: isDarkMode ? Colors.blue.shade300 : Colors.blue.shade700,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade300,
-                                  ),
-                                ),
-                              ),
-                              style: TextStyle(
-                                color: isDarkMode ? Colors.white : Colors.black,
-                              ),
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return 'Please enter your answer';
-                                }
-                                return null;
-                              },
-                            ),
-                            if (_errorMessage.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 16),
-                                child: Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Colors.red.withOpacity(0.3)),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.error_outline, color: Colors.red, size: 20),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          _errorMessage,
-                                          style: const TextStyle(
-                                            color: Colors.red,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            const Spacer(),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 50,
-                              child: ElevatedButton(
-                                onPressed: _verifySecurityAnswer,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: isDarkMode ? AppColors.primaryDark : AppColors.primaryLight,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: 2,
-                                ),
-                                child: const Text(
-                                  'Verify & Reset PIN',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                color: _remainingAttempts == 1 ? errorColor : Colors.orange,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
+                      ],
+                      const SizedBox(height: 40),
+                      ElevatedButton(
+                        onPressed: _remainingAttempts <= 0 || _isLoading ? null : _verifySecurityAnswer,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: accentColor,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: accentColor.withOpacity(0.5),
+                          disabledForegroundColor: Colors.white.withOpacity(0.7),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Verify Answer',
+                                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                              ),
                       ),
                     ],
                   ),
                 ),
-            ],
-          ),
         ),
       ),
     );
   }
-  
-
 }

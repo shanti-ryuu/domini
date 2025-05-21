@@ -7,6 +7,10 @@ class PinDisplay extends StatelessWidget {
   final int enteredDigits;
   final bool isError;
   final bool isVerifying;
+  final Color? filledColor;
+  final Color? emptyColor;
+  final double dotSize;
+  final double spacing;
 
   const PinDisplay({
     Key? key,
@@ -14,6 +18,10 @@ class PinDisplay extends StatelessWidget {
     required this.enteredDigits,
     this.isError = false,
     this.isVerifying = false,
+    this.filledColor,
+    this.emptyColor,
+    this.dotSize = 16.0,
+    this.spacing = 16.0,
   }) : super(key: key);
 
   @override
@@ -35,41 +43,41 @@ class PinDisplay extends StatelessWidget {
 
   Widget _buildPinDot(BuildContext context, int index, bool isActive, bool isDarkMode) {
     Color dotColor;
-    double size = 16.0;
+    double size = dotSize;
     
     if (isVerifying && isActive) {
-      dotColor = isDarkMode ? Colors.blue.shade700 : Colors.blue.shade500;
-      size = 18.0;
+      dotColor = filledColor ?? (isDarkMode ? Colors.blue.shade700 : Colors.blue.shade500);
+      size = dotSize * 1.125;
     } else if (isActive) {
       dotColor = isError
-          ? Colors.red
-          : isDarkMode
+          ? (filledColor ?? Colors.red)
+          : filledColor ?? (isDarkMode
               ? AppColors.primaryDark
-              : AppColors.primaryLight;
-      size = 18.0;
+              : AppColors.primaryLight);
+      size = dotSize * 1.125;
     } else {
-      dotColor = isDarkMode
-          ? AppColors.pinDotInactive.withOpacity(0.5) 
-          : AppColors.pinDotInactive;
-      size = 16.0;
+      dotColor = emptyColor ?? (isDarkMode
+          ? Colors.grey.shade800
+          : Colors.grey.shade300);
     }
     
     return AnimatedContainer(
-      duration: Duration(milliseconds: 150),
-      curve: Curves.easeInOut,
-      margin: const EdgeInsets.symmetric(horizontal: 12),
-      width: size,
+      duration: const Duration(milliseconds: 200),
+      margin: EdgeInsets.symmetric(horizontal: spacing / 2),
       height: size,
+      width: size,
       decoration: BoxDecoration(
         color: dotColor,
         shape: BoxShape.circle,
-        boxShadow: isActive ? [
-          BoxShadow(
-            color: dotColor.withOpacity(0.5),
-            blurRadius: 8,
-            spreadRadius: 1,
-          )
-        ] : null,
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: dotColor.withOpacity(0.5),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                ),
+              ]
+            : null,
       ),
       child: isError && isActive ? _buildErrorAnimation() : null,
     );

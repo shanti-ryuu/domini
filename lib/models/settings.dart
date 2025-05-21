@@ -33,6 +33,15 @@ class Settings extends HiveObject {
   
   @HiveField(9)
   bool isPinLocked;
+  
+  @HiveField(10)
+  String username;
+  
+  @HiveField(11)
+  String displayName;
+  
+  @HiveField(12)
+  String? profileImagePath;
 
   Settings({
     this.encryptedPin = '',
@@ -45,6 +54,9 @@ class Settings extends HiveObject {
     this.failedPinAttempts = 0,
     this.lastFailedAttempt,
     this.isPinLocked = false,
+    this.username = '',
+    this.displayName = '',
+    this.profileImagePath,
   });
 
   Settings copyWith({
@@ -58,6 +70,9 @@ class Settings extends HiveObject {
     int? failedPinAttempts,
     DateTime? lastFailedAttempt,
     bool? isPinLocked,
+    String? username,
+    String? displayName,
+    String? profileImagePath,
   }) {
     return Settings(
       encryptedPin: encryptedPin ?? this.encryptedPin,
@@ -70,6 +85,9 @@ class Settings extends HiveObject {
       failedPinAttempts: failedPinAttempts ?? this.failedPinAttempts,
       lastFailedAttempt: lastFailedAttempt ?? this.lastFailedAttempt,
       isPinLocked: isPinLocked ?? this.isPinLocked,
+      username: username ?? this.username,
+      displayName: displayName ?? this.displayName,
+      profileImagePath: profileImagePath ?? this.profileImagePath,
     );
   }
 }
