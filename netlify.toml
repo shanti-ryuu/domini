@@ -1,7 +1,5 @@
 [build]
-  # Explicitly disable any build commands
-  command = ":"
-  # Specify the directory with pre-built files
+  command = "true"
   publish = "build/web"
 
 [[redirects]]
