@@ -9,3 +9,7 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Disable asset optimization to preserve Flutter web files
+[build.processing]
+  skip_processing = true
