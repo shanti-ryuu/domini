@@ -18,6 +18,21 @@ class Settings extends HiveObject {
 
   @HiveField(4)
   int pinLength;
+  
+  @HiveField(5)
+  String securityQuestion;
+  
+  @HiveField(6)
+  String encryptedSecurityAnswer;
+  
+  @HiveField(7)
+  int failedPinAttempts;
+  
+  @HiveField(8)
+  DateTime? lastFailedAttempt;
+  
+  @HiveField(9)
+  bool isPinLocked;
 
   Settings({
     this.encryptedPin = '',
@@ -25,6 +40,11 @@ class Settings extends HiveObject {
     this.useSystemTheme = true,
     this.biometricEnabled = false,
     this.pinLength = 6,
+    this.securityQuestion = '',
+    this.encryptedSecurityAnswer = '',
+    this.failedPinAttempts = 0,
+    this.lastFailedAttempt,
+    this.isPinLocked = false,
   });
 
   Settings copyWith({
@@ -33,6 +53,11 @@ class Settings extends HiveObject {
     bool? useSystemTheme,
     bool? biometricEnabled,
     int? pinLength,
+    String? securityQuestion,
+    String? encryptedSecurityAnswer,
+    int? failedPinAttempts,
+    DateTime? lastFailedAttempt,
+    bool? isPinLocked,
   }) {
     return Settings(
       encryptedPin: encryptedPin ?? this.encryptedPin,
@@ -40,6 +65,11 @@ class Settings extends HiveObject {
       useSystemTheme: useSystemTheme ?? this.useSystemTheme,
       biometricEnabled: biometricEnabled ?? this.biometricEnabled,
       pinLength: pinLength ?? this.pinLength,
+      securityQuestion: securityQuestion ?? this.securityQuestion,
+      encryptedSecurityAnswer: encryptedSecurityAnswer ?? this.encryptedSecurityAnswer,
+      failedPinAttempts: failedPinAttempts ?? this.failedPinAttempts,
+      lastFailedAttempt: lastFailedAttempt ?? this.lastFailedAttempt,
+      isPinLocked: isPinLocked ?? this.isPinLocked,
     );
   }
 }

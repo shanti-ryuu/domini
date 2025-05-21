@@ -103,9 +103,52 @@ class DatabaseService {
     }
     return settings.encryptedPin == _hashPin(pin);
   }
+  
+  // Security Question methods
+  Future<void> setSecurityQuestion(String question, String answer) async {
+    final settings = settingsBox.getAt(0);
+    if (settings != null) {
+      settings.securityQuestion = question;
+      settings.encryptedSecurityAnswer = _hashSecurityAnswer(answer);
+      await settings.save();
+    }
+  }
+  
+  Future<bool> verifySecurityAnswer(String answer) async {
+    final settings = settingsBox.getAt(0);
+    if (settings == null || settings.encryptedSecurityAnswer.isEmpty) {
+      return false;
+    }
+    return settings.encryptedSecurityAnswer == _hashSecurityAnswer(answer);
+  }
+  
+  Future<String> getSecurityQuestion() async {
+    final settings = settingsBox.getAt(0);
+    if (settings == null) {
+      return '';
+    }
+    return settings.securityQuestion;
+  }
+  
+  Future<bool> hasSecurityQuestion() async {
+    final settings = settingsBox.getAt(0);
+    return settings != null && 
+           settings.securityQuestion.isNotEmpty && 
+           settings.encryptedSecurityAnswer.isNotEmpty;
+  }
+  
+  // This method is already defined elsewhere in the class, removing the duplicate
 
   String _hashPin(String pin) {
     final bytes = utf8.encode(pin);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+  
+  String _hashSecurityAnswer(String answer) {
+    // Normalize the answer by trimming and converting to lowercase
+    final normalizedAnswer = answer.trim().toLowerCase();
+    final bytes = utf8.encode(normalizedAnswer);
     final digest = sha256.convert(bytes);
     return digest.toString();
   }

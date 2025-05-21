@@ -24,7 +24,7 @@ class SettingsScreen extends StatelessWidget {
             onPressed: () {
               Navigator.pop(context);
               final authService = Provider.of<AuthService>(context, listen: false);
-              authService.signOut();
+              authService.logout();
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (context) => const PinScreen()),
                 (route) => false,
@@ -74,7 +74,7 @@ class SettingsScreen extends StatelessWidget {
 
   void _changePin(BuildContext context) {
     final authService = Provider.of<AuthService>(context, listen: false);
-    authService.signOut();
+    authService.logout();
     Navigator.pushReplacement(
       context,
       CupertinoPageRoute(

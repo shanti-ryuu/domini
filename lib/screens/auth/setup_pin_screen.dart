@@ -7,7 +7,12 @@ import 'package:domini/widgets/pin_keyboard.dart';
 import 'package:domini/widgets/pin_display.dart';
 
 class SetupPinScreen extends StatefulWidget {
-  const SetupPinScreen({super.key});
+  final bool isReset;
+  
+  const SetupPinScreen({
+    Key? key,
+    this.isReset = false,
+  }) : super(key: key);
 
   @override
   State<SetupPinScreen> createState() => _SetupPinScreenState();
@@ -18,8 +23,28 @@ class _SetupPinScreenState extends State<SetupPinScreen> {
   final List<int> _confirmPin = [];
   bool _isConfirming = false;
   bool _isError = false;
-  String _headerText = 'Create PIN';
-  String _subHeaderText = 'Enter a 6-digit PIN to secure your notes';
+  late String _headerText;
+  late String _subHeaderText;
+  
+  @override
+  void initState() {
+    super.initState();
+    _updateHeaderText();
+  }
+  
+  void _updateHeaderText() {
+    if (widget.isReset) {
+      _headerText = _isConfirming ? 'Confirm New PIN' : 'Create New PIN';
+      _subHeaderText = _isConfirming 
+          ? 'Re-enter your new PIN to confirm' 
+          : 'Enter a 6-digit PIN to replace your old one';
+    } else {
+      _headerText = _isConfirming ? 'Confirm PIN' : 'Create PIN';
+      _subHeaderText = _isConfirming 
+          ? 'Re-enter your PIN to confirm' 
+          : 'Enter a 6-digit PIN to secure your notes';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +53,7 @@ class _SetupPinScreenState extends State<SetupPinScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Setup PIN'),
+        title: Text(widget.isReset ? 'Reset PIN' : 'Setup PIN'),
         leading: _isConfirming
             ? IconButton(
                 icon: const Icon(CupertinoIcons.back),
@@ -84,7 +109,25 @@ class _SetupPinScreenState extends State<SetupPinScreen> {
   }
 
   void _onKeyPressed(int digit, int pinLength) {
-    if (_isConfirming) {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final int pinLength = authService.pinLength;
+    
+    if (!_isConfirming) {
+      // First PIN entry
+      if (_enteredPin.length < pinLength) {
+        setState(() {
+          _enteredPin.add(digit);
+        });
+
+        // Check if PIN is complete
+        if (_enteredPin.length == pinLength) {
+          setState(() {
+            _isConfirming = true;
+            _updateHeaderText();
+          });
+        }
+      }
+    } else {
       if (_confirmPin.length < pinLength) {
         setState(() {
           _confirmPin.add(digit);
@@ -94,21 +137,6 @@ class _SetupPinScreenState extends State<SetupPinScreen> {
         // Check if confirmation PIN is complete
         if (_confirmPin.length == pinLength) {
           _verifyPins();
-        }
-      }
-    } else {
-      if (_enteredPin.length < pinLength) {
-        setState(() {
-          _enteredPin.add(digit);
-        });
-
-        // Check if initial PIN is complete
-        if (_enteredPin.length == pinLength) {
-          setState(() {
-            _isConfirming = true;
-            _headerText = 'Confirm PIN';
-            _subHeaderText = 'Re-enter your PIN to confirm';
-          });
         }
       }
     }
@@ -136,21 +164,44 @@ class _SetupPinScreenState extends State<SetupPinScreen> {
     final String confirmPin = _confirmPin.join();
 
     if (pin == confirmPin) {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      await authService.setPin(pin);
-
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          CupertinoPageRoute(
-            builder: (context) => const HomeScreen(),
-          ),
-        );
-      }
+      await _savePin();
     } else {
       setState(() {
         _isError = true;
         _confirmPin.clear();
       });
+    }
+  }
+  
+  Future<void> _savePin() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final String pin = _enteredPin.join();
+    
+    await authService.setPin(pin);
+    
+    // If this is a PIN reset, also set a security question and answer
+    if (widget.isReset) {
+      // In a real app, you would save the security question and answer here
+      // This is just a simulation for the demo
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+    
+    if (mounted) {
+      // Show success message for PIN reset
+      if (widget.isReset) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('PIN has been successfully reset'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      
+      Navigator.of(context).pushReplacement(
+        CupertinoPageRoute(
+          builder: (context) => const HomeScreen(),
+        ),
+      );
     }
   }
 }
